@@ -29,6 +29,7 @@
 @synthesize shortcutPlaceholder = _shortcutPlaceholder;
 @synthesize shortcutValueChange = _shortcutValueChange;
 @synthesize recording = _recording;
+@synthesize appearance = _appearance;
 
 #pragma mark -
 
@@ -342,25 +343,26 @@ void *kUserDataHint = &kUserDataHint;
     
     static id eventMonitor = nil;
     if (shouldActivate) {
-        __weak MASShortcutView *weakSelf = self;
+        __unsafe_unretained MASShortcutView *weakSelf = self; // Removed in -dealloc
         NSEventMask eventMask = (NSKeyDownMask | NSFlagsChangedMask);
         eventMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:eventMask handler:^(NSEvent *event) {
+            MASShortcutView *self = weakSelf;
 
             MASShortcut *shortcut = [MASShortcut shortcutWithEvent:event];
             if ((shortcut.keyCode == kVK_Delete) || (shortcut.keyCode == kVK_ForwardDelete)) {
                 // Delete shortcut
-                weakSelf.shortcutValue = nil;
-                weakSelf.recording = NO;
+                self.shortcutValue = nil;
+                self.recording = NO;
                 event = nil;
             }
             else if (shortcut.keyCode == kVK_Escape) {
                 // Cancel recording
-                weakSelf.recording = NO;
+                self.recording = NO;
                 event = nil;
             }
             else if (shortcut.shouldBypass) {
                 // Command + W, Command + Q, ESC should deactivate recorder
-                weakSelf.recording = NO;
+                self.recording = NO;
             }
             else {
                 // Verify possible shortcut
@@ -370,20 +372,20 @@ void *kUserDataHint = &kUserDataHint;
                         NSError *error = nil;
                         if ([shortcut isTakenError:&error]) {
                             // Prevent cancel of recording when Alert window is key
-                            [weakSelf activateResignObserver:NO];
-                            [weakSelf activateEventMonitoring:NO];
+                            [self activateResignObserver:NO];
+                            [self activateEventMonitoring:NO];
                             NSString *format = NSLocalizedString(@"The key combination %@ cannot be used",
                                                                  @"Title for alert when shortcut is already used");
                             NSRunCriticalAlertPanel([NSString stringWithFormat:format, shortcut], error.localizedDescription,
                                                     NSLocalizedString(@"OK", @"Alert button when shortcut is already used"),
                                                     nil, nil);
-                            weakSelf.shortcutPlaceholder = nil;
-                            [weakSelf activateResignObserver:YES];
-                            [weakSelf activateEventMonitoring:YES];
+                            self.shortcutPlaceholder = nil;
+                            [self activateResignObserver:YES];
+                            [self activateEventMonitoring:YES];
                         }
                         else {
-                            weakSelf.shortcutValue = shortcut;
-                            weakSelf.recording = NO;
+                            self.shortcutValue = shortcut;
+                            self.recording = NO;
                         }
                     }
                     else {
@@ -393,7 +395,7 @@ void *kUserDataHint = &kUserDataHint;
                 }
                 else {
                     // User is playing with modifier keys
-                    weakSelf.shortcutPlaceholder = shortcut.modifierFlagsString;
+                    self.shortcutPlaceholder = shortcut.modifierFlagsString;
                 }
                 event = nil;
             }
@@ -414,7 +416,7 @@ void *kUserDataHint = &kUserDataHint;
     static id observer = nil;
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     if (shouldActivate) {
-        __weak MASShortcutView *weakSelf = self;
+        __unsafe_unretained MASShortcutView *weakSelf = self; // Removed in -dealloc
         observer = [notificationCenter addObserverForName:NSWindowDidResignKeyNotification object:self.window
                                                 queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
                                                     weakSelf.recording = NO;

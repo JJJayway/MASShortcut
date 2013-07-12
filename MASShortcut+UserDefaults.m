@@ -5,7 +5,7 @@
 
 @property (nonatomic, readonly) NSString *userDefaultsKey;
 @property (nonatomic, copy) void (^handler)();
-@property (nonatomic, weak) id monitor;
+@property (nonatomic) id monitor; // Was weak, but I see no need for that. Doesn't MASShortcutUserDefaultsHotKey own the monitor?
 
 - (id)initWithUserDefaultsKey:(NSString *)userDefaultsKey handler:(void (^)())handler;
 

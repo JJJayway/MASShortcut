@@ -5,7 +5,7 @@
 @interface MASShortcutDefaultsObserver : NSObject
 
 @property (nonatomic, readonly) NSString *userDefaultsKey;
-@property (nonatomic, readonly, weak) MASShortcutView *shortcutView;
+@property (nonatomic, readonly, unsafe_unretained) MASShortcutView *shortcutView; // When the shortcutView is deallocated it will clear all associated objects, including the referring MASShortcutDefaultsObserver
 
 - (id)initWithShortcutView:(MASShortcutView *)shortcutView userDefaultsKey:(NSString *)userDefaultsKey;
 
@@ -64,7 +64,7 @@ void *MASAssociatedDefaultsObserver = &MASAssociatedDefaultsObserver;
 
 - (void)dealloc
 {
-    // __weak _shortcutView is not yet deallocated because it refers MASShortcutDefaultsObserver
+    // __unsafe_unretained _shortcutView is not yet deallocated because it refers MASShortcutDefaultsObserver (if the _shortcutView was deallocated, self would be too)
     [self stopObservingShortcutView];
 }
 
