@@ -21,6 +21,7 @@
     NSInteger _shortcutToolTipTag;
     NSInteger _hintToolTipTag;
     NSTrackingArea *_hintArea;
+    BOOL deallocated;
 }
 
 @synthesize enabled = _enabled;
@@ -48,6 +49,7 @@
 
 - (void)dealloc
 {
+    deallocated = YES;
     [self activateEventMonitoring:NO];
     [self activateResignObserver:NO];
 }
@@ -115,6 +117,7 @@
 
 - (void)setShortcutValue:(MASShortcut *)shortcutValue
 {
+    if (deallocated) return;
     _shortcutValue = shortcutValue;
     [self resetToolTips];
     [self setNeedsDisplay:YES];
